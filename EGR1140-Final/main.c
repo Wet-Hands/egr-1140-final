@@ -13,26 +13,26 @@
 
 // Map Data
 
-#define ROOM_SIZE_X 5
-#define ROOM_SIZE_Y 10
+#define ROOM_SIZE_X 7
+#define ROOM_SIZE_Y 12
 int tile_array[ROOM_SIZE_Y][ROOM_SIZE_X];
 
 // Tile Declaration
 
-const char *tiles[] = { "[ ]", "[*]", "[X]", "[E]", "[H]", "[P]", "[W]" };
+const char *tiles[] = { "[ ]", "[\u263A]", "[X]", "[E]", "[H]", "[P]", "[\u25A0]" };
 
 // Player Data
 
-int player_x = 0;
-int player_y = 0;
+int player_x = 1;
+int player_y = 1;
 int player_health = 10;
 int player_stamina = 100;
 
 // Enemy Data
 
-int is_enemy_spawned = 0;
-int enemy_x = ROOM_SIZE_X-1;
-int enemy_y = ROOM_SIZE_Y-1;
+int is_enemy_spawned = 1;
+int enemy_x = ROOM_SIZE_X-2;
+int enemy_y = ROOM_SIZE_Y-2;
 int enemy_health = 3;
 int enemy_stamina = 2;
 
@@ -53,6 +53,7 @@ struct enemy
 
 int main(void)
 {
+    system("chcp 65001 > nul");
     char input;
 
     room_generator();
@@ -99,6 +100,10 @@ void room_generator(void)
         for (int x = 0; x < ROOM_SIZE_X; x++)
         {
             tile_array[y][x] = TILE_EMPTY;
+            if(y == 0 || x == 0 || y == ROOM_SIZE_Y-1 || x == ROOM_SIZE_X-1)
+            {
+                tile_array[y][x] = TILE_WALL;
+            }
         }
     }
 
@@ -146,11 +151,8 @@ void move_player(char input)
     if (input == 'd') new_x++;
 
     if (new_x < 0 || new_x >= ROOM_SIZE_X || new_y < 0 || new_y >= ROOM_SIZE_Y) return;
-
-    if (new_x == enemy_x && new_y == enemy_y)
-    {
-        return;
-    }
+    if (tile_array[new_y][new_x] == TILE_WALL) return;
+    if (tile_array[new_y][new_x] == TILE_ENEMY) return;
 
     if (input == 'w' || input == 's' || input == 'a' || input == 'd')
     {
