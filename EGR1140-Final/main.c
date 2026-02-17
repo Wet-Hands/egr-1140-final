@@ -7,6 +7,9 @@
 #define TILE_PLAYER 1
 #define TILE_EXIT   2
 #define TILE_ENEMY  3
+#define TILE_HEALTH 4
+#define TILE_POWER  5
+#define TILE_WALL   6
 
 // Map Data
 
@@ -16,7 +19,7 @@ int tile_array[ROOM_SIZE_Y][ROOM_SIZE_X];
 
 // Tile Declaration
 
-const char *tiles[] = { "[ ]", "[*]", "[X]", "[E]" };
+const char *tiles[] = { "[ ]", "[*]", "[X]", "[E]", "[H]", "[P]", "[W]" };
 
 // Player Data
 
@@ -27,6 +30,7 @@ int player_stamina = 100;
 
 // Enemy Data
 
+int is_enemy_spawned = 0;
 int enemy_x = ROOM_SIZE_X-1;
 int enemy_y = ROOM_SIZE_Y-1;
 int enemy_health = 3;
@@ -38,6 +42,14 @@ void room_generator(void);
 void room_visual(void);
 void move_player(char input);
 void move_enemy(void);
+
+struct enemy
+{
+    int position_x;
+    int position_y;
+    int health;
+    int stamina;
+};
 
 int main(void)
 {
@@ -78,9 +90,8 @@ int main(void)
     return 0;
 }
 
-/* ===============================
-   Initialize room
-   =============================== */
+// Generates Tile Map
+
 void room_generator(void)
 {
     for (int y = 0; y < ROOM_SIZE_Y; y++)
@@ -92,12 +103,19 @@ void room_generator(void)
     }
 
     tile_array[player_y][player_x] = TILE_PLAYER;
-    tile_array[enemy_y][enemy_x]   = TILE_ENEMY;
+    if(is_enemy_spawned == 1)
+    {
+        tile_array[enemy_y][enemy_x]   = TILE_ENEMY;
+    }
+    else
+    {
+        enemy_x = -1;
+        enemy_y = -1;
+    }
 }
 
-/* ===============================
-   Draw room
-   =============================== */
+// Draws Room based on Tile Map
+
 void room_visual(void)
 {
     printf("\n");
