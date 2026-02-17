@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <conio.h>
+#include <windows.h>
 
 // Tile Types
 
@@ -10,23 +11,25 @@
 #define TILE_HEALTH 4
 #define TILE_POWER  5
 #define TILE_WALL   6
+#define TILE_PRIZE  7
 
 // Map Data
 
 #define ROOM_SIZE_X 7
 #define ROOM_SIZE_Y 12
 int tile_array[ROOM_SIZE_Y][ROOM_SIZE_X];
+int refresh_dungeon = 1;
 
 // Tile Declaration
 
-const char *tiles[] = { "[ ]", "[\u263A]", "[X]", "[E]", "[H]", "[P]", "[\u25A0]" };
+const char *tiles[] = { "[ ]", "[\u263A]", "[X]", "[E]", "[\u2661]", "[P]", "[\u25A0]", "[$]" };
 
 // Player Data
 
 int player_x = 1;
 int player_y = 1;
 int player_health = 10;
-int player_stamina = 100;
+int player_stamina = 3;
 
 // Enemy Data
 
@@ -74,11 +77,13 @@ int main(void)
             break;
 
         move_player(input);
-        //if (input == 'w' || input == 's' || input == 'a' || input == 'd')
-        //{
-            //move_enemy();   /* Enemy acts after player */
-        //}
 
+        if (player_stamina == 0)
+        {
+            move_enemy();
+            player_stamina = 3;
+            refresh_dungeon = 1;
+        }
 
         if (player_health <= 0)
         {
@@ -129,14 +134,18 @@ void room_visual(void)
         for (int x = 0; x < ROOM_SIZE_X; x++)
         {
             printf("%s", tiles[tile_array[y][x]]);
+            if(refresh_dungeon == 1)
+            {
+                Sleep(20);
+            }
         }
         printf("\n");
     }
+    refresh_dungeon = 0;
 }
 
-/* ===============================
-   Player movement
-   =============================== */
+// Player Movement
+
 void move_player(char input)
 {
     if (player_stamina <= 0)
