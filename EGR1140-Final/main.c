@@ -1,55 +1,44 @@
 #include <stdio.h>
 #include <conio.h>
 
-/* ===============================
-   Room size
-   =============================== */
-#define ROOM_SIZE_X 5
-#define ROOM_SIZE_Y 10
+// Tile Types
 
-/* ===============================
-   Tile types
-   =============================== */
 #define TILE_EMPTY  0
 #define TILE_PLAYER 1
 #define TILE_EXIT   2
 #define TILE_ENEMY  3
 
-/* ===============================
-   Game map
-   =============================== */
+// Map Data
+
+#define ROOM_SIZE_X 5
+#define ROOM_SIZE_Y 10
 int tile_array[ROOM_SIZE_Y][ROOM_SIZE_X];
 
-/* ===============================
-   Tile visuals
-   =============================== */
+// Tile Declaration
+
 const char *tiles[] = { "[ ]", "[*]", "[X]", "[E]" };
 
-/* ===============================
-   Player data
-   =============================== */
+// Player Data
+
 int player_x = 0;
 int player_y = 0;
 int player_health = 10;
 int player_stamina = 100;
 
-/* ===============================
-   Enemy data
-   =============================== */
+// Enemy Data
+
 int enemy_x = ROOM_SIZE_X-1;
 int enemy_y = ROOM_SIZE_Y-1;
+int enemy_health = 3;
+int enemy_stamina = 2;
 
-/* ===============================
-   Function declarations
-   =============================== */
+// Function Declaration
+
 void room_generator(void);
 void room_visual(void);
 void move_player(char input);
 void move_enemy(void);
 
-/* ===============================
-   Program entry
-   =============================== */
 int main(void)
 {
     char input;
@@ -72,10 +61,10 @@ int main(void)
             break;
 
         move_player(input);
-        if (input == 'w' || input == 's' || input == 'a' || input == 'd')
-        {
-            move_enemy();   /* Enemy acts after player */
-        }
+        //if (input == 'w' || input == 's' || input == 'a' || input == 'd')
+        //{
+            //move_enemy();   /* Enemy acts after player */
+        //}
 
 
         if (player_health <= 0)
@@ -138,9 +127,12 @@ void move_player(char input)
     if (input == 'a') new_x--;
     if (input == 'd') new_x++;
 
-    if (new_x < 0 || new_x >= ROOM_SIZE_X ||
-        new_y < 0 || new_y >= ROOM_SIZE_Y)
+    if (new_x < 0 || new_x >= ROOM_SIZE_X || new_y < 0 || new_y >= ROOM_SIZE_Y) return;
+
+    if (new_x == enemy_x && new_y == enemy_y)
+    {
         return;
+    }
 
     if (input == 'w' || input == 's' || input == 'a' || input == 'd')
     {
