@@ -24,13 +24,6 @@ int refresh_dungeon = 1;
 
 const char *tiles[] = { "[ ]", "[\u263A]", "[\u235F]", "[E]", "[\u2661]", "[P]", "[\u25A0]", "[$]" };
 
-// Player Data
-
-int player_x = 1;
-int player_y = 1;
-int player_health = 10;
-int player_stamina = 3;
-
 // Enemy Data
 
 int is_enemy_spawned = 1;
@@ -39,14 +32,7 @@ int enemy_y = ROOM_SIZE_Y-2;
 int enemy_health = 3;
 int enemy_stamina = 2;
 
-// Function Declaration
-
-void room_generator(void);
-void room_visual(void);
-void move_player(char input);
-void move_enemy(void);
-
-struct player
+struct player_struct
 {
     int position_x;
     int position_y;
@@ -54,7 +40,7 @@ struct player
     int stamina;
 };
 
-struct enemy
+struct enemy_struct
 {
     int is_spawned;
 
@@ -64,6 +50,13 @@ struct enemy
     int stamina;
 };
 
+// Function Declaration
+
+void room_generator(struct player_struct *player);
+void room_visual(void);
+void move_player(char input, struct player_struct *player);
+void move_enemy(struct player_struct *player);
+
 void setColor(int colorValue) {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTextAttribute(hConsole, colorValue);
@@ -72,9 +65,14 @@ int main(void)
 {
     system("chcp 65001 > nul");
 
-    char input;
+    struct player_struct player;
+    player.position_x = 1;
+    player.position_y = 1;
+    player.health = 10;
+    player.stamina = 3;
 
-    room_generator();
+    char input;
+    room_generator(&player);
 
     while (1)
     {
@@ -82,8 +80,8 @@ int main(void)
 
         room_visual();
 
-        printf("\nYour Health: %d\n", player_health);
-        printf("Your Stamina: %d\n", player_stamina);
+        printf("\nYour Health: %d\n", player.health);
+        printf("Your Stamina: %d\n", player.stamina);
         if(enemy_health > 0) printf("Enemy's Health: %d\n", enemy_health);
         printf("Move with WASD, q to quit\n");
 
@@ -92,22 +90,22 @@ int main(void)
         if (input == 'q')
             break;
 
-        move_player(input);
+        move_player(input, &player);
 
-        if (player_stamina == 0)
+        if (player.stamina == 0)
         {
             for(int i = 0; i < enemy_stamina; i++)
             {
                 if(enemy_health > 0)
                 {
-                    move_enemy();
+                    move_enemy(&player);
                 }
             }
-            player_stamina = 3;
+            player.stamina = 3;
             refresh_dungeon = 1;
         }
 
-        if (player_health <= 0)
+        if (player.health <= 0)
         {
             system("cls");
             printf("You were defeated!\n");
@@ -120,7 +118,7 @@ int main(void)
 
 // Generates Tile Map
 
-void room_generator(void)
+void room_generator(struct player_struct *player)
 {
     for (int y = 0; y < ROOM_SIZE_Y; y++)
     {
@@ -134,7 +132,7 @@ void room_generator(void)
         }
     }
 
-    tile_array[player_y][player_x] = TILE_PLAYER;
+    tile_array[player->position_y][player->position_x] = TILE_PLAYER;
     if(is_enemy_spawned == 1)
     {
         tile_array[enemy_y][enemy_x]   = TILE_ENEMY;
@@ -178,13 +176,13 @@ void room_visual(void)
 
 // Player Movement
 
-void move_player(char input)
+void move_player(char input, struct player_struct *player)
 {
-    if (player_stamina <= 0)
+    if (player->stamina <= 0)
         return;
 
-    int new_x = player_x;
-    int new_y = player_y;
+    int new_x = player->position_x;
+    int new_y = player->position_y;
 
     if (input == 'w') new_y--;
     if (input == 's') new_y++;
@@ -196,7 +194,7 @@ void move_player(char input)
     if (tile_array[new_y][new_x] == TILE_ENEMY)
     {
         enemy_health--;
-        player_stamina--;
+        player->stamina--;
 
         if(enemy_health <= 0)
         {
@@ -211,42 +209,36 @@ void move_player(char input)
 
     if (input == 'w' || input == 's' || input == 'a' || input == 'd')
     {
-        player_stamina--;
+        player->stamina--;
     }
 
-    tile_array[player_y][player_x] = TILE_EMPTY;
+    tile_array[player->position_y][player->position_x] = TILE_EMPTY;
 
-    player_x = new_x;
-    player_y = new_y;
+    player->position_x = new_x;
+    player->position_y = new_y;
 
-    tile_array[player_y][player_x] = TILE_PLAYER;
+    tile_array[player->position_y][player->position_x] = TILE_PLAYER;
 }
 
 // Enemy Movement
 
-void move_enemy(void)
+void move_enemy(struct player_struct *player)
 {
     int new_x = enemy_x;
     int new_y = enemy_y;
 
-    // Simple chase AI (Which might need to be nerfed)
-    if (player_x > enemy_x) new_x++;
-    else if (player_x < enemy_x) new_x--;
+    if (player->position_x > enemy_x) new_x++;
+    else if (player->position_x < enemy_x) new_x--;
 
-    if (player_y > enemy_y) new_y++;
-    else if (player_y < enemy_y) new_y--;
+    if (player->position_y > enemy_y) new_y++;
+    else if (player->position_y < enemy_y) new_y--;
 
-    /* Check bounds */
-    if (new_x < 0 || new_x >= ROOM_SIZE_X || new_y < 0 || new_y >= ROOM_SIZE_Y) return;
-
-    /* If enemy reaches player */
-    if (new_x == player_x && new_y == player_y)
+    if (new_x == player->position_x && new_y == player->position_y)
     {
-        player_health--;
+        player->health--;
         return;
     }
 
-    /* Move enemy */
     tile_array[enemy_y][enemy_x] = TILE_EMPTY;
     enemy_x = new_x;
     enemy_y = new_y;
