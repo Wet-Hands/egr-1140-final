@@ -46,8 +46,18 @@ void room_visual(void);
 void move_player(char input);
 void move_enemy(void);
 
+struct player
+{
+    int position_x;
+    int position_y;
+    int health;
+    int stamina;
+};
+
 struct enemy
 {
+    int is_spawned;
+
     int position_x;
     int position_y;
     int health;
