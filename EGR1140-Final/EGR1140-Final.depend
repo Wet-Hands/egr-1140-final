@@ -1,8 +1,56 @@
 # depslib dependency file v1.0
-1771517185 source:c:\users\btwar\downloads\egr1140\egr-1140-final\egr1140-final\main.c
+1771539760 source:c:\users\btwar\downloads\egr1140\egr-1140-final\egr1140-final\main.c
 	<stdio.h>
 	<conio.h>
 	<windows.h>
 	<stdlib.h>
 	<time.h>
+	"types.h"
+	"player.h"
+	"enemy.h"
+	"room.h"
+	"move.h"
+	"ui.h"
+	"save.h"
+
+1771539760 c:\users\btwar\downloads\egr1140\egr-1140-final\egr1140-final\types.h
+
+1771539760 c:\users\btwar\downloads\egr1140\egr-1140-final\egr1140-final\player.h
+
+1771539760 c:\users\btwar\downloads\egr1140\egr-1140-final\egr1140-final\enemy.h
+
+1771539760 c:\users\btwar\downloads\egr1140\egr-1140-final\egr1140-final\room.h
+	"types.h"
+	"player.h"
+	"enemy.h"
+
+1771539760 c:\users\btwar\downloads\egr1140\egr-1140-final\egr1140-final\move.h
+	"player.h"
+	"enemy.h"
+	"room.h"
+
+1771539760 c:\users\btwar\downloads\egr1140\egr-1140-final\egr1140-final\ui.h
+
+1771539760 c:\users\btwar\downloads\egr1140\egr-1140-final\egr1140-final\save.h
+
+1771539760 source:c:\users\btwar\downloads\egr1140\egr-1140-final\egr1140-final\move.c
+	"move.h"
+	"types.h"
+
+1771539760 source:c:\users\btwar\downloads\egr1140\egr-1140-final\egr1140-final\room.c
+	<stdio.h>
+	<windows.h>
+	"room.h"
+	"ui.h"
+
+1771539760 source:c:\users\btwar\downloads\egr1140\egr-1140-final\egr1140-final\save.c
+	<stdio.h>
+	"save.h"
+
+1771540281 source:c:\users\btwar\downloads\egr1140\egr-1140-final\egr1140-final\ui.c
+	<stdio.h>
+	<conio.h>
+	<windows.h>
+	"ui.h"
+	"types.h"
 
