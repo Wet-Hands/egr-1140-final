@@ -165,7 +165,7 @@ int title_screen(int highscore)
 
         // LUKA
         if (selected == 2) setColor(13); else setColor(8);
-        printf("                        %s  LUKA (Score x 5)\n", selected == 2 ? ">" : " ");
+        printf("                        %s  EXPERT (Score x 5)\n", selected == 2 ? ">" : " ");
         printf("                             HP: %-3d  Stamina: %d\n\n",
                PLAYER_HEALTH_LUKA, PLAYER_STAMINA_LUKA);
 
@@ -256,7 +256,7 @@ int main(void)
             printf("\nFloor: %d  ", floor);
             if (difficulty == 1) { setColor(10); printf("[NORMAL]"); }
             else if (difficulty == 2) { setColor(12); printf("[HARD]"); }
-            else { setColor(13); printf("[LUKA]"); }
+            else { setColor(13); printf("[EXPERT]"); }
             setColor(7);
 
             printf("\nYour Health: %d/%d\n", player.health, p_health);
@@ -391,7 +391,7 @@ void room_visual(struct room_struct *room)
                 setColor(7);
 
             if (room->refresh == 1)
-                Sleep(5);
+                Sleep(1);
         }
         printf("\n");
     }
