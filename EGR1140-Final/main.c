@@ -41,8 +41,6 @@
 // Tile Declaration
 const char *tiles[] = { "[ ]", "[\u263A]", "[\u235F]", "[E]", "[\u2661]", "[P]", "[\u25A0]", "[$]" };
 
-FILE *fptr; // save.txt
-
 struct room_struct
 {
     int tile_array[ROOM_MAX_Y][ROOM_MAX_X];
@@ -71,7 +69,9 @@ struct enemy_struct
 };
 
 // Function Declarations
-int title_screen(void);
+int  load_highscore(void);
+void save_highscore(int score);
+int  title_screen(int highscore);
 void room_generator(struct room_struct *room, struct player_struct *player, struct enemy_struct *enemy);
 void room_visual(struct room_struct *room);
 void move_player(char input, struct player_struct *player, struct enemy_struct *enemy, struct room_struct *room);
@@ -82,8 +82,36 @@ void setColor(int colorValue) {
     SetConsoleTextAttribute(hConsole, colorValue);
 }
 
+// Reads high score from save.txt; returns 0 if missing or unreadable
+int load_highscore(void)
+{
+    int score = 0;
+    FILE *f = fopen("save.txt", "r");
+    if (f != NULL)
+    {
+        fscanf(f, "%d", &score);
+        fclose(f);
+    }
+    return score;
+}
+
+// Writes new high score to save.txt only if it beats the current one
+void save_highscore(int score)
+{
+    int current = load_highscore();
+    if (score > current)
+    {
+        FILE *f = fopen("save.txt", "w");
+        if (f != NULL)
+        {
+            fprintf(f, "%d", score);
+            fclose(f);
+        }
+    }
+}
+
 // Returns selected difficulty: 1=Normal, 2=Hard, 3=LUKA. Returns -1 to quit.
-int title_screen(void)
+int title_screen(int highscore)
 {
     int selected = 0; // 0=Normal, 1=Hard, 2=LUKA
 
@@ -107,25 +135,37 @@ int title_screen(void)
         printf("                         ██████╔╝╚██████╔╝╚██████╔╝██║ ╚═╝ ██║\n");
         printf("                         ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝     ╚═╝\n");
         printf("\n");
+
+        // High score display
+        if (highscore > 0)
+        {
+            setColor(14);
+            printf("                        \u2605 High Score: %d Points \u2605\n\n", highscore);
+        }
+        else
+        {
+            setColor(8);
+            printf("                          High Score: None\n\n");
+        }
+
         setColor(7);
-        printf("                     Your High Score: 0\n\n"); // Read Highscore from save.txt
         printf("                     W / S to navigate  |  ENTER to confirm\n\n");
 
         // Normal
         if (selected == 0) setColor(10); else setColor(8);
-        printf("                        %s  NORMAL (Score x 1.0)\n", selected == 0 ? ">" : " ");
+        printf("                        %s  NORMAL (Score x 1)\n", selected == 0 ? ">" : " ");
         printf("                             HP: %-3d  Stamina: %d\n\n",
                PLAYER_HEALTH_NORMAL, PLAYER_STAMINA_NORMAL);
 
         // Hard
         if (selected == 1) setColor(12); else setColor(8);
-        printf("                        %s  HARD (Score x 2.0)\n", selected == 1 ? ">" : " ");
+        printf("                        %s  HARD (Score x 2)\n", selected == 1 ? ">" : " ");
         printf("                             HP: %-3d  Stamina: %d\n\n",
                PLAYER_HEALTH_HARD, PLAYER_STAMINA_HARD);
 
         // LUKA
         if (selected == 2) setColor(13); else setColor(8);
-        printf("                        %s  LUKA (Score x 5.0)\n", selected == 2 ? ">" : " ");
+        printf("                        %s  LUKA (Score x 5)\n", selected == 2 ? ">" : " ");
         printf("                             HP: %-3d  Stamina: %d\n\n",
                PLAYER_HEALTH_LUKA, PLAYER_STAMINA_LUKA);
 
@@ -151,33 +191,34 @@ int main(void)
 
     while (1)
     {
-        int difficulty = title_screen();
+        int highscore = load_highscore();
+        int difficulty = title_screen(highscore);
         if (difficulty == -1) return 0;
 
         int p_health, p_stamina, e_health, e_stamina, score_multiplier;
 
         if (difficulty == 1)
         {
-            p_health  = PLAYER_HEALTH_NORMAL;
-            p_stamina = PLAYER_STAMINA_NORMAL;
-            e_health  = ENEMY_HEALTH_NORMAL;
-            e_stamina = ENEMY_STAMINA_NORMAL;
+            p_health         = PLAYER_HEALTH_NORMAL;
+            p_stamina        = PLAYER_STAMINA_NORMAL;
+            e_health         = ENEMY_HEALTH_NORMAL;
+            e_stamina        = ENEMY_STAMINA_NORMAL;
             score_multiplier = SCORE_NORMAL;
         }
         else if (difficulty == 2)
         {
-            p_health  = PLAYER_HEALTH_HARD;
-            p_stamina = PLAYER_STAMINA_HARD;
-            e_health  = ENEMY_HEALTH_HARD;
-            e_stamina = ENEMY_STAMINA_HARD;
+            p_health         = PLAYER_HEALTH_HARD;
+            p_stamina        = PLAYER_STAMINA_HARD;
+            e_health         = ENEMY_HEALTH_HARD;
+            e_stamina        = ENEMY_STAMINA_HARD;
             score_multiplier = SCORE_HARD;
         }
         else
         {
-            p_health  = PLAYER_HEALTH_LUKA;
-            p_stamina = PLAYER_STAMINA_LUKA;
-            e_health  = ENEMY_HEALTH_LUKA;
-            e_stamina = ENEMY_STAMINA_LUKA;
+            p_health         = PLAYER_HEALTH_LUKA;
+            p_stamina        = PLAYER_STAMINA_LUKA;
+            e_health         = ENEMY_HEALTH_LUKA;
+            e_stamina        = ENEMY_STAMINA_LUKA;
             score_multiplier = SCORE_LUKA;
         }
 
@@ -221,7 +262,7 @@ int main(void)
             printf("\nYour Health: %d/%d\n", player.health, p_health);
             printf("Your Stamina: %d/%d\n", player.stamina, p_stamina);
             if (enemy.is_spawned && enemy.health > 0)
-                printf("Enemy's Health: %d/%d\n", enemy.health, e_health);
+                printf("Enemy's Health: %d/%d\n", enemy.health, e_health + (floor / 2));
             else if (!enemy.is_spawned)
                 printf("Find the exit! [%s]\n", tiles[TILE_EXIT]);
             printf("Move with WASD, q to quit\n");
@@ -272,6 +313,10 @@ int main(void)
 
             if (player.health <= 0)
             {
+                int final_score = floor * score_multiplier;
+                int new_best = (final_score > highscore);
+                save_highscore(final_score);
+
                 system("cls");
                 setColor(12);
                 printf("\n\n");
@@ -283,7 +328,12 @@ int main(void)
                 printf("      ╚═╝    ╚═════╝  ╚═════╝     ╚═════╝ ╚═╝╚══════╝╚═════╝ ╚═╝\n");
                 setColor(8);
                 printf("\n                      You made it to floor %d.\n", floor);
-                printf("\n                      Your Final Score: %d Points\n", (floor * score_multiplier));
+                printf("                      Your Final Score: %d Points\n", final_score);
+                if (new_best)
+                {
+                    setColor(14);
+                    printf("                      \u2605 NEW HIGH SCORE! \u2605\n");
+                }
                 setColor(7);
                 printf("\n                   Press any key to return to title...\n");
                 _getch();
