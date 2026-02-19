@@ -3,7 +3,6 @@
 #include <windows.h>
 
 // Tile Types
-
 #define TILE_EMPTY  0
 #define TILE_PLAYER 1
 #define TILE_EXIT   2
@@ -14,23 +13,24 @@
 #define TILE_PRIZE  7
 
 // Map Data
-
 #define ROOM_SIZE_X 7
 #define ROOM_SIZE_Y 12
+
+// My Last Two Global Variables
 int tile_array[ROOM_SIZE_Y][ROOM_SIZE_X];
 int refresh_dungeon = 1;
 
 // Tile Declaration
-
 const char *tiles[] = { "[ ]", "[\u263A]", "[\u235F]", "[E]", "[\u2661]", "[P]", "[\u25A0]", "[$]" };
 
-// Enemy Data
+struct room_struct
+{
+    int size_x;
+    int size_y;
 
-int is_enemy_spawned = 1;
-int enemy_x = ROOM_SIZE_X-2;
-int enemy_y = ROOM_SIZE_Y-2;
-int enemy_health = 3;
-int enemy_stamina = 2;
+    int array[100][100];
+    int refresh;
+};
 
 struct player_struct
 {
@@ -51,16 +51,16 @@ struct enemy_struct
 };
 
 // Function Declaration
-
-void room_generator(struct player_struct *player);
+void room_generator(struct player_struct *player, struct enemy_struct *enemy);
 void room_visual(void);
-void move_player(char input, struct player_struct *player);
-void move_enemy(struct player_struct *player);
+void move_player(char input, struct player_struct *player, struct enemy_struct *enemy);
+void move_enemy(struct enemy_struct *enemy, struct player_struct *player);
 
 void setColor(int colorValue) {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTextAttribute(hConsole, colorValue);
 }
+
 int main(void)
 {
     system("chcp 65001 > nul");
@@ -71,8 +71,15 @@ int main(void)
     player.health = 10;
     player.stamina = 3;
 
+    struct enemy_struct enemy;
+    enemy.position_x = ROOM_SIZE_X-2;
+    enemy.position_y = ROOM_SIZE_Y-2;
+    enemy.health = 3;
+    enemy.stamina = 2;
+    enemy.is_spawned = 1;
+
     char input;
-    room_generator(&player);
+    room_generator(&player, &enemy);
 
     while (1)
     {
@@ -82,7 +89,7 @@ int main(void)
 
         printf("\nYour Health: %d\n", player.health);
         printf("Your Stamina: %d\n", player.stamina);
-        if(enemy_health > 0) printf("Enemy's Health: %d\n", enemy_health);
+        if(enemy.health > 0) printf("Enemy's Health: %d\n", enemy.health);
         printf("Move with WASD, q to quit\n");
 
         input = _getch();
@@ -90,15 +97,15 @@ int main(void)
         if (input == 'q')
             break;
 
-        move_player(input, &player);
+        move_player(input, &player, &enemy);
 
         if (player.stamina == 0)
         {
-            for(int i = 0; i < enemy_stamina; i++)
+            for(int i = 0; i < enemy.stamina; i++)
             {
-                if(enemy_health > 0)
+                if(enemy.health > 0)
                 {
-                    move_enemy(&player);
+                    move_enemy(&enemy, &player);
                 }
             }
             player.stamina = 3;
@@ -117,8 +124,7 @@ int main(void)
 }
 
 // Generates Tile Map
-
-void room_generator(struct player_struct *player)
+void room_generator(struct player_struct *player, struct enemy_struct *enemy)
 {
     for (int y = 0; y < ROOM_SIZE_Y; y++)
     {
@@ -133,19 +139,18 @@ void room_generator(struct player_struct *player)
     }
 
     tile_array[player->position_y][player->position_x] = TILE_PLAYER;
-    if(is_enemy_spawned == 1)
+    if(enemy->is_spawned == 1)
     {
-        tile_array[enemy_y][enemy_x]   = TILE_ENEMY;
+        tile_array[enemy->position_y][enemy->position_x]   = TILE_ENEMY;
     }
     else
     {
-        enemy_x = -1;
-        enemy_y = -1;
+        enemy->position_x = -1;
+        enemy->position_y = -1;
     }
 }
 
 // Draws Room based on Tile Map
-
 void room_visual(void)
 {
     printf("\n");
@@ -175,8 +180,7 @@ void room_visual(void)
 }
 
 // Player Movement
-
-void move_player(char input, struct player_struct *player)
+void move_player(char input, struct player_struct *player, struct enemy_struct *enemy)
 {
     if (player->stamina <= 0)
         return;
@@ -193,17 +197,13 @@ void move_player(char input, struct player_struct *player)
     if (tile_array[new_y][new_x] == TILE_WALL) return;
     if (tile_array[new_y][new_x] == TILE_ENEMY)
     {
-        enemy_health--;
+        enemy->health--;
         player->stamina--;
 
-        if(enemy_health <= 0)
+        if(enemy->health <= 0)
         {
-            tile_array[enemy_y][enemy_x] = TILE_EMPTY;
-            room_visual();
+            tile_array[enemy->position_y][enemy->position_x] = TILE_EMPTY;
         }
-
-        Sleep(50);
-
         return;
     }
 
@@ -221,17 +221,16 @@ void move_player(char input, struct player_struct *player)
 }
 
 // Enemy Movement
-
-void move_enemy(struct player_struct *player)
+void move_enemy(struct enemy_struct *enemy, struct player_struct *player)
 {
-    int new_x = enemy_x;
-    int new_y = enemy_y;
+    int new_x = enemy->position_x;
+    int new_y = enemy->position_y;
 
-    if (player->position_x > enemy_x) new_x++;
-    else if (player->position_x < enemy_x) new_x--;
+    if (player->position_x > enemy->position_x) new_x++;
+    else if (player->position_x < enemy->position_x) new_x--;
 
-    if (player->position_y > enemy_y) new_y++;
-    else if (player->position_y < enemy_y) new_y--;
+    if (player->position_y > enemy->position_y) new_y++;
+    else if (player->position_y < enemy->position_y) new_y--;
 
     if (new_x == player->position_x && new_y == player->position_y)
     {
@@ -239,8 +238,8 @@ void move_enemy(struct player_struct *player)
         return;
     }
 
-    tile_array[enemy_y][enemy_x] = TILE_EMPTY;
-    enemy_x = new_x;
-    enemy_y = new_y;
-    tile_array[enemy_y][enemy_x] = TILE_ENEMY;
+    tile_array[enemy->position_y][enemy->position_x] = TILE_EMPTY;
+    enemy->position_x = new_x;
+    enemy->position_y = new_y;
+    tile_array[enemy->position_y][enemy->position_x] = TILE_ENEMY;
 }
