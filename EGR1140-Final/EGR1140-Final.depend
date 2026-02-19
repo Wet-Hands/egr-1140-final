@@ -1,6 +1,8 @@
 # depslib dependency file v1.0
-1771438852 source:c:\users\btwar\downloads\egr1140\egr-1140-final\egr1140-final\main.c
+1771517185 source:c:\users\btwar\downloads\egr1140\egr-1140-final\egr1140-final\main.c
 	<stdio.h>
 	<conio.h>
 	<windows.h>
+	<stdlib.h>
+	<time.h>
 

@@ -15,28 +15,33 @@
 #define TILE_PRIZE  7
 
 // Map Size Constraints
-#define ROOM_MIN    5
-#define ROOM_MAX_X  15
-#define ROOM_MAX_Y  15
+#define ROOM_MIN    6
+#define ROOM_MAX_X  10
+#define ROOM_MAX_Y  10
 
 // Difficulty Constraints
-#define PLAYER_HEALTH_NORMAL  10
+#define PLAYER_HEALTH_NORMAL  8
 #define PLAYER_STAMINA_NORMAL 5
 #define ENEMY_HEALTH_NORMAL   3
 #define ENEMY_STAMINA_NORMAL  2
+#define SCORE_NORMAL          1
 
-#define PLAYER_HEALTH_HARD    8
+#define PLAYER_HEALTH_HARD    7
 #define PLAYER_STAMINA_HARD   4
 #define ENEMY_HEALTH_HARD     4
 #define ENEMY_STAMINA_HARD    3
+#define SCORE_HARD            2
 
 #define PLAYER_HEALTH_LUKA    1
 #define PLAYER_STAMINA_LUKA   3
 #define ENEMY_HEALTH_LUKA     3
 #define ENEMY_STAMINA_LUKA    2
+#define SCORE_LUKA            5
 
 // Tile Declaration
 const char *tiles[] = { "[ ]", "[\u263A]", "[\u235F]", "[E]", "[\u2661]", "[P]", "[\u25A0]", "[$]" };
+
+FILE *fptr;
 
 struct room_struct
 {
@@ -66,7 +71,7 @@ struct enemy_struct
 };
 
 // Function Declarations
-void title_screen(void);
+int title_screen(void);
 void room_generator(struct room_struct *room, struct player_struct *player, struct enemy_struct *enemy);
 void room_visual(struct room_struct *room);
 void move_player(char input, struct player_struct *player, struct enemy_struct *enemy, struct room_struct *room);
@@ -77,34 +82,66 @@ void setColor(int colorValue) {
     SetConsoleTextAttribute(hConsole, colorValue);
 }
 
-void title_screen(void)
+// Returns selected difficulty: 1=Normal, 2=Hard, 3=LUKA. Returns -1 to quit.
+int title_screen(void)
 {
-    system("cls");
-    setColor(12);
-    printf("\n");
-    printf("  ██████╗ ██╗   ██╗███╗   ██╗ ██████╗ ███████╗ ██████╗ ███╗   ██╗\n");
-    printf("  ██╔══██╗██║   ██║████╗  ██║██╔════╝ ██╔════╝██╔═══██╗████╗  ██║\n");
-    printf("  ██║  ██║██║   ██║██╔██╗ ██║██║  ███╗█████╗  ██║   ██║██╔██╗ ██║\n");
-    printf("  ██║  ██║██║   ██║██║╚██╗██║██║   ██║██╔══╝  ██║   ██║██║╚██╗██║\n");
-    printf("  ██████╔╝╚██████╔╝██║ ╚████║╚██████╔╝███████╗╚██████╔╝██║ ╚████║\n");
-    printf("  ╚═════╝  ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝ ╚══════╝ ╚═════╝ ╚═╝  ╚═══╝\n");
-    printf("\n");
-    setColor(14);
-    printf("                         ██████╗  ██████╗  ██████╗ ███╗   ███╗\n");
-    printf("                         ██╔══██╗██╔═══██╗██╔═══██╗████╗ ████║\n");
-    printf("                         ██║  ██║██║   ██║██║   ██║██╔████╔██║\n");
-    printf("                         ██║  ██║██║   ██║██║   ██║██║╚██╔╝██║\n");
-    printf("                         ██████╔╝╚██████╔╝╚██████╔╝██║ ╚═╝ ██║\n");
-    printf("                         ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝     ╚═╝\n");
-    printf("\n");
-    setColor(7);
-    printf("                      Move with WASD | Q to Quit\n");
-    printf("                    Defeat the enemy, find the exit!\n");
-    printf("\n");
-    setColor(8);
-    printf("                       Press any key to begin...\n");
-    setColor(7);
-    _getch();
+    int selected = 0; // 0=Normal, 1=Hard, 2=LUKA
+
+    while (1)
+    {
+        system("cls");
+        setColor(12);
+        printf("\n");
+        printf("  ██████╗ ██╗   ██╗███╗   ██╗ ██████╗ ███████╗ ██████╗ ███╗   ██╗\n");
+        printf("  ██╔══██╗██║   ██║████╗  ██║██╔════╝ ██╔════╝██╔═══██╗████╗  ██║\n");
+        printf("  ██║  ██║██║   ██║██╔██╗ ██║██║  ███╗█████╗  ██║   ██║██╔██╗ ██║\n");
+        printf("  ██║  ██║██║   ██║██║╚██╗██║██║   ██║██╔══╝  ██║   ██║██║╚██╗██║\n");
+        printf("  ██████╔╝╚██████╔╝██║ ╚████║╚██████╔╝███████╗╚██████╔╝██║ ╚████║\n");
+        printf("  ╚═════╝  ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝ ╚══════╝ ╚═════╝ ╚═╝  ╚═══╝\n");
+        printf("\n");
+        setColor(14);
+        printf("                         ██████╗  ██████╗  ██████╗ ███╗   ███╗\n");
+        printf("                         ██╔══██╗██╔═══██╗██╔═══██╗████╗ ████║\n");
+        printf("                         ██║  ██║██║   ██║██║   ██║██╔████╔██║\n");
+        printf("                         ██║  ██║██║   ██║██║   ██║██║╚██╔╝██║\n");
+        printf("                         ██████╔╝╚██████╔╝╚██████╔╝██║ ╚═╝ ██║\n");
+        printf("                         ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝     ╚═╝\n");
+        printf("\n");
+        setColor(7);
+        printf("                     Your High Score: 0\n\n");
+        printf("                     W / S to navigate  |  ENTER to confirm\n\n");
+
+        // Normal
+        if (selected == 0) setColor(10); else setColor(8);
+        printf("                        %s  NORMAL (Score x 1.0)\n", selected == 0 ? ">" : " ");
+        printf("                             HP: %-3d  Stamina: %d\n\n",
+               PLAYER_HEALTH_NORMAL, PLAYER_STAMINA_NORMAL);
+
+        // Hard
+        if (selected == 1) setColor(12); else setColor(8);
+        printf("                        %s  HARD (Score x 2.0)\n", selected == 1 ? ">" : " ");
+        printf("                             HP: %-3d  Stamina: %d\n\n",
+               PLAYER_HEALTH_HARD, PLAYER_STAMINA_HARD);
+
+        // LUKA
+        if (selected == 2) setColor(13); else setColor(8);
+        printf("                        %s  LUKA (Score x 5.0)\n", selected == 2 ? ">" : " ");
+        printf("                             HP: %-3d  Stamina: %d\n\n",
+               PLAYER_HEALTH_LUKA, PLAYER_STAMINA_LUKA);
+
+        setColor(8);
+        printf("                             Q to quit\n");
+        setColor(7);
+
+        char key = _getch();
+
+        if (key == 'w' && selected > 0) selected--;
+        if (key == 's' && selected < 2) selected++;
+        if (key == '\r') break;
+        if (key == 'q') return -1;
+    }
+
+    return selected + 1; // 1=Normal, 2=Hard, 3=LUKA
 }
 
 int main(void)
@@ -112,26 +149,58 @@ int main(void)
     system("chcp 65001 > nul");
     srand((unsigned int)time(NULL));
 
+    fptr = fopen("save.txt", "r");
+
     while (1)
     {
-        title_screen();
+        int difficulty = title_screen();
+        if (difficulty == -1) return 0;
+
+        int p_health, p_stamina, e_health, e_stamina, score_multiplier;
+
+        if (difficulty == 1)
+        {
+            p_health  = PLAYER_HEALTH_NORMAL;
+            p_stamina = PLAYER_STAMINA_NORMAL;
+            e_health  = ENEMY_HEALTH_NORMAL;
+            e_stamina = ENEMY_STAMINA_NORMAL;
+            score_multiplier = SCORE_NORMAL;
+        }
+        else if (difficulty == 2)
+        {
+            p_health  = PLAYER_HEALTH_HARD;
+            p_stamina = PLAYER_STAMINA_HARD;
+            e_health  = ENEMY_HEALTH_HARD;
+            e_stamina = ENEMY_STAMINA_HARD;
+            score_multiplier = SCORE_HARD;
+        }
+        else
+        {
+            p_health  = PLAYER_HEALTH_LUKA;
+            p_stamina = PLAYER_STAMINA_LUKA;
+            e_health  = ENEMY_HEALTH_LUKA;
+            e_stamina = ENEMY_STAMINA_LUKA;
+            score_multiplier = SCORE_LUKA;
+        }
 
         struct room_struct room;
         room.size_x = 7;
         room.size_y = 10;
         room.refresh = 1;
+        room.exit_x = -1;
+        room.exit_y = -1;
 
         struct player_struct player;
         player.position_x = 1;
         player.position_y = 1;
-        player.health = 10;
-        player.stamina = 5;
+        player.health = p_health;
+        player.stamina = p_stamina;
 
         struct enemy_struct enemy;
-        enemy.position_x = room.size_x-2;
-        enemy.position_y = room.size_y-2;
-        enemy.health = 3;
-        enemy.stamina = 2;
+        enemy.position_x = room.size_x - 2;
+        enemy.position_y = room.size_y - 2;
+        enemy.health = e_health;
+        enemy.stamina = e_stamina;
         enemy.is_spawned = 1;
 
         char input;
@@ -143,26 +212,28 @@ int main(void)
         while (running)
         {
             system("cls");
-
             room_visual(&room);
 
-            printf("\nFloor: %d\n", floor);
-            printf("Your Health: %d\n", player.health);
-            printf("Your Stamina: %d\n", player.stamina);
+            printf("\nFloor: %d  ", floor);
+            if (difficulty == 1) { setColor(10); printf("[NORMAL]"); }
+            else if (difficulty == 2) { setColor(12); printf("[HARD]"); }
+            else { setColor(13); printf("[LUKA]"); }
+            setColor(7);
+
+            printf("\nYour Health: %d/%d\n", player.health, p_health);
+            printf("Your Stamina: %d/%d\n", player.stamina, p_stamina);
             if (enemy.is_spawned && enemy.health > 0)
-                printf("Enemy's Health: %d\n", enemy.health);
+                printf("Enemy's Health: %d/%d\n", enemy.health, e_health);
             else if (!enemy.is_spawned)
                 printf("Find the exit! [%s]\n", tiles[TILE_EXIT]);
             printf("Move with WASD, q to quit\n");
 
             input = _getch();
 
-            if (input == 'q')
-                return 0;
+            if (input == 'q') return 0;
 
             move_player(input, &player, &enemy, &room);
 
-            // Check if player stepped onto the exit
             if (player.position_y == room.exit_y && player.position_x == room.exit_x)
             {
                 floor++;
@@ -173,16 +244,17 @@ int main(void)
                 room.size_x = new_size_x;
                 room.size_y = new_size_y;
                 room.refresh = 1;
+                room.exit_x = -1;
+                room.exit_y = -1;
 
                 player.position_x = 1;
                 player.position_y = 1;
-                player.stamina = 5; // Resetting Stamina
+                player.stamina = p_stamina;
 
-                // Scale enemy stats to floor
                 enemy.position_x = new_size_x - 2;
                 enemy.position_y = new_size_y - 2;
-                enemy.health = 2 + (floor / 2);
-                enemy.stamina = 2;
+                enemy.health = e_health + (floor / 2);
+                enemy.stamina = e_stamina;
                 enemy.is_spawned = 1;
 
                 room_generator(&room, &player, &enemy);
@@ -194,11 +266,9 @@ int main(void)
                 for (int i = 0; i < enemy.stamina; i++)
                 {
                     if (enemy.is_spawned && enemy.health > 0)
-                    {
                         move_enemy(&enemy, &player, &room);
-                    }
                 }
-                player.stamina = 5;
+                player.stamina = p_stamina;
                 room.refresh = 1;
             }
 
@@ -215,6 +285,7 @@ int main(void)
                 printf("      ╚═╝    ╚═════╝  ╚═════╝     ╚═════╝ ╚═╝╚══════╝╚═════╝ ╚═╝\n");
                 setColor(8);
                 printf("\n                      You made it to floor %d.\n", floor);
+                printf("\n                      Your Final Score: %d Points\n", (floor * score_multiplier));
                 setColor(7);
                 printf("\n                   Press any key to return to title...\n");
                 _getch();
@@ -229,12 +300,10 @@ int main(void)
 // Generates Tile Map
 void room_generator(struct room_struct *room, struct player_struct *player, struct enemy_struct *enemy)
 {
-    // Clear the full max-size array first
     for (int y = 0; y < ROOM_MAX_Y; y++)
         for (int x = 0; x < ROOM_MAX_X; x++)
             room->tile_array[y][x] = TILE_EMPTY;
 
-    // Build walls for the actual room size
     for (int y = 0; y < room->size_y; y++)
     {
         for (int x = 0; x < room->size_x; x++)
@@ -248,9 +317,7 @@ void room_generator(struct room_struct *room, struct player_struct *player, stru
     room->tile_array[player->position_y][player->position_x] = TILE_PLAYER;
 
     if (enemy->is_spawned == 1)
-    {
         room->tile_array[enemy->position_y][enemy->position_x] = TILE_ENEMY;
-    }
     else
     {
         enemy->position_x = -1;
@@ -286,8 +353,7 @@ void room_visual(struct room_struct *room)
 // Player Movement
 void move_player(char input, struct player_struct *player, struct enemy_struct *enemy, struct room_struct *room)
 {
-    if (player->stamina <= 0)
-        return;
+    if (player->stamina <= 0) return;
 
     int new_x = player->position_x;
     int new_y = player->position_y;
@@ -310,12 +376,9 @@ void move_player(char input, struct player_struct *player, struct enemy_struct *
             room->tile_array[enemy->position_y][enemy->position_x] = TILE_EMPTY;
             enemy->is_spawned = 0;
 
-            // Spawn the exit in the far corner
             int exit_x = room->size_x - 2;
             int exit_y = room->size_y - 2;
 
-
-            // Safety: don't spawn exit on the player
             if (exit_x == player->position_x && exit_y == player->position_y)
                 exit_x--;
 
@@ -353,7 +416,6 @@ void move_enemy(struct enemy_struct *enemy, struct player_struct *player, struct
         return;
     }
 
-    // Don't walk onto the exit tile
     if (room->tile_array[new_y][new_x] == TILE_EXIT) return;
 
     room->tile_array[enemy->position_y][enemy->position_x] = TILE_EMPTY;
