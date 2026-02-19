@@ -21,14 +21,19 @@
 
 // Difficulty Constraints
 #define PLAYER_HEALTH_NORMAL  10
-#define PLAYER_HEALTH_HARD    8
 #define PLAYER_STAMINA_NORMAL 5
-#define PLAYER_STAMINA_HARD   4
-
 #define ENEMY_HEALTH_NORMAL   3
-#define ENEMY_HEALTH_HARD     4
 #define ENEMY_STAMINA_NORMAL  2
+
+#define PLAYER_HEALTH_HARD    8
+#define PLAYER_STAMINA_HARD   4
+#define ENEMY_HEALTH_HARD     4
 #define ENEMY_STAMINA_HARD    3
+
+#define PLAYER_HEALTH_LUKA    1
+#define PLAYER_STAMINA_LUKA   3
+#define ENEMY_HEALTH_LUKA     3
+#define ENEMY_STAMINA_LUKA    2
 
 // Tile Declaration
 const char *tiles[] = { "[ ]", "[\u263A]", "[\u235F]", "[E]", "[\u2661]", "[P]", "[\u25A0]", "[$]" };
