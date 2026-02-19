@@ -15,7 +15,7 @@
 #define TILE_PRIZE  7
 
 // Map Size Constraints
-#define ROOM_MIN    6
+#define ROOM_MIN    5
 #define ROOM_MAX_X  10
 #define ROOM_MAX_Y  10
 
@@ -41,7 +41,7 @@
 // Tile Declaration
 const char *tiles[] = { "[ ]", "[\u263A]", "[\u235F]", "[E]", "[\u2661]", "[P]", "[\u25A0]", "[$]" };
 
-FILE *fptr;
+FILE *fptr; // save.txt
 
 struct room_struct
 {
@@ -108,7 +108,7 @@ int title_screen(void)
         printf("                         ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝     ╚═╝\n");
         printf("\n");
         setColor(7);
-        printf("                     Your High Score: 0\n\n");
+        printf("                     Your High Score: 0\n\n"); // Read Highscore from save.txt
         printf("                     W / S to navigate  |  ENTER to confirm\n\n");
 
         // Normal
@@ -148,8 +148,6 @@ int main(void)
 {
     system("chcp 65001 > nul");
     srand((unsigned int)time(NULL));
-
-    fptr = fopen("save.txt", "r");
 
     while (1)
     {
