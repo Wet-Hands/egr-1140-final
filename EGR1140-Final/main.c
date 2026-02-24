@@ -141,7 +141,7 @@ int main(void)
 
             if (player.health <= 0)
             {
-                int final_score = floor * score_multiplier;
+                int final_score = floor-1 * score_multiplier;
                 int new_best = (final_score > highscore);
                 save_highscore(final_score);
 
